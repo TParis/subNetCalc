@@ -33,8 +33,8 @@ int main() {
 }
 
 struct Network *netAddr(char* addr, char* subNet){
-    struct Network *returnStruct = malloc(sizeof(struct Network));
-    int* oct0 = (int)malloc(sizeof(int));
+    struct Network *returnStruct = malloc(sizeof(struct Network));  //Allocate at compile time, not runtime
+    int* oct0 = (int)malloc(sizeof(int));                           //You don't need to do this on the heap.  Allocate at compile time, not runtime
     int* oct1 = (int)malloc(sizeof(int));
     int* oct2 = (int)malloc(sizeof(int));
     int* oct3 = (int)malloc(sizeof(int));
@@ -50,12 +50,12 @@ struct Network *netAddr(char* addr, char* subNet){
         return -1;
     }
     if (intAddr(subNet, sub0, sub1, sub2, sub3) == -1) {
-        printf("INVALID INPUT");
+        printf("INVALID INPUT");                                    //Don't handle errors inside of the function, handle them outside either in Main() or in an error handler
         return -1;
     }
-    if (*sub1 < 255) {
-        if (*sub3 != 0 || *sub2 !=0) {
-            printf("INVALID SUBNET MASK");
+    if (*sub1 < 255) {                                                              //Lines 56 through 84 can be done in nearly 5 or 6 lines if you understand IP addressing.
+        if (*sub3 != 0 || *sub2 !=0) {                                              //Don't try to solve each byte independently.  Make the IP and Subnet uint32s and then AND
+            printf("INVALID SUBNET MASK");                                          //them together.  The output will be your low address.
             return -1;
         }
         snprintf(firstAddr, 50, "(%d.%d.%d.%d)", *oct0, (*oct1 & *sub1), 0, 1);
@@ -84,7 +84,7 @@ struct Network *netAddr(char* addr, char* subNet){
     return returnStruct;
 }
 
-int intAddr(char* string, int* first, int* second, int* third, int* fourth) {
+int intAddr(char* string, int* first, int* second, int* third, int* fourth) {   //You can put the entire IP address in 1 uint32.  Think binary
     int tmp = 0;
     double tensCount = 0;
     int dotPosition = 0;
@@ -92,20 +92,20 @@ int intAddr(char* string, int* first, int* second, int* third, int* fourth) {
     int placeCounter = 0;
     int count = 0;
     for (int i = 0; i <= strlen(string); i++) {
-        if (string[i] != '.' && i != strlen(string)) {
+        if (string[i] != '.' && i != strlen(string)) {     //No string library functions.  What do you need to check for to determine the end of a string?
             count++;
         }
         else {
             tensCount = pow(10, (count - 1));
             for (int o = (i - count); o < i; o++) {
-                tmp += ((string[o] - 48) * tensCount);
+                tmp += ((string[o] - 48) * tensCount);      // Good job.  A char number - 48 equals the integer value.  Use pointer arithmatic, not array syntax
                 tensCount /= 10;
             }
             if (tmp < 0 | tmp > 255) {
                 printf("INVALID ADDRESS");
                 return -1;
             }
-            switch (dotPosition) {
+            switch (dotPosition) {                          //You can add these values into a uint32 using shl and OR bitwise operators
             case 0:
                 *first = tmp;
                 dotPosition++;
